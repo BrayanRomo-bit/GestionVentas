@@ -1,188 +1,277 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace GestionVentas
 {
     public partial class Form1 : Form
     {
-        private Producto productoEjemplo;
-        private Button btnAdmin;
-        private Button btnCliente;
+        // --- DATOS ---
+        private List<Producto> listaProductos;
+        private Cliente miCliente;
+
+        // --- CONTROLES VISUALES ---
+        private Panel panelAdmin;
+        private Panel panelCliente;
+        private ListBox listBoxGeneral;
+
+        // Botones del Menú Principal
+        private Button btnEntrarAdmin;
+        private Button btnEntrarCliente;
+        private Label lblTitulo;
+
+        // Controles de ADMIN
+        private TextBox txtNuevoNombre;
+        private NumericUpDown nudNuevoPrecio;
+        private NumericUpDown nudNuevoStock;
+        private Button btnCrearProducto;
+        private Button btnReponerStock;
+        private NumericUpDown nudCantidadReponer;
+
+        // Controles de CLIENTE
+        private Label lblSaldoCliente;
+        private TextBox txtDeposito;
+        private Button btnDepositar;
+        private NumericUpDown nudCantidadComprar;
+        private Button btnComprar;
 
         public Form1()
         {
             InitializeComponent();
-            // Asegurar que los controles necesarios existen incluso si el diseñador fue modificado accidentalmente
-            EnsureControlsInitialized();
+            ConfigurarDatos();
+            CrearInterfaz();
+            MostrarMenuPrincipal();
         }
 
+        // AGREGADO: Esto soluciona el error CS1061 de la lista de errores
         private void Form1_Load(object sender, EventArgs e)
         {
-            // Producto de ejemplo para mostrar precio y cantidad
-            productoEjemplo = new Producto("Ejemplo", 9.99m, 100);
-
-            // Asegurar controles antes de usarlos (defensiva si InitializeComponent no los creó)
-            EnsureControlsInitialized();
-
-            // Mostrar precio en la etiqueta (formato monetario)
-            if (lblPrecio != null)
-            {
-                lblPrecio.Text = productoEjemplo.Precio.ToString("C");
-            }
-
-            // Ajustar máximo del selector de cantidad al stock disponible
-            if (nudCantidad != null)
-            {
-                nudCantidad.Maximum = productoEjemplo.Cantidad;
-            }
-
-            // Estado inicial: modo cliente activo
-            SetModoCliente();
         }
 
-        private void btnComprarProducto_Click(object sender, EventArgs e)
+        private void ConfigurarDatos()
         {
-            if (nudCantidad == null || productoEjemplo == null)
+            listaProductos = new List<Producto>();
+
+            // CORREGIDO: Ahora pasamos los 4 datos que pide tu clase Cliente
+            // (Nombre, Apellido, Email, Saldo)
+            miCliente = new Cliente("Usuario", "Prueba", "correo@ejemplo.com", 500.00m);
+        }
+
+        private void CrearInterfaz()
+        {
+            if (this.Width < 650) this.Size = new Size(650, 500); // Un poco más ancho
+            this.Text = "Sistema de Ventas";
+
+            // --- MENU PRINCIPAL ---
+            lblTitulo = new Label() { Text = "SELECCIONA TU ROL:", Location = new Point(20, 10), AutoSize = true, Font = new Font("Arial", 12, FontStyle.Bold) };
+            this.Controls.Add(lblTitulo);
+
+            btnEntrarAdmin = new Button() { Text = "Soy ADMIN", Location = new Point(20, 40), Width = 120, BackColor = Color.LightSalmon };
+            btnEntrarAdmin.Click += (s, e) => MostrarPanelAdmin();
+            this.Controls.Add(btnEntrarAdmin);
+
+            btnEntrarCliente = new Button() { Text = "Soy CLIENTE", Location = new Point(150, 40), Width = 120, BackColor = Color.LightBlue };
+            btnEntrarCliente.Click += (s, e) => MostrarPanelCliente();
+            this.Controls.Add(btnEntrarCliente);
+
+            // --- LISTA DE PRODUCTOS ---
+            listBoxGeneral = new ListBox() { Location = new Point(320, 40), Size = new Size(280, 400) };
+            this.Controls.Add(listBoxGeneral);
+
+            // --- PANEL ADMIN ---
+            panelAdmin = new Panel() { Location = new Point(20, 80), Size = new Size(280, 350), BorderStyle = BorderStyle.FixedSingle, Visible = false };
+            this.Controls.Add(panelAdmin);
+
+            Label lblAdminTitle = new Label() { Text = "--- GESTIÓN ADMIN ---", Location = new Point(10, 10), AutoSize = true, Font = new Font("Arial", 10, FontStyle.Bold) };
+            panelAdmin.Controls.Add(lblAdminTitle);
+
+            // === AQUI CORREGÍ EL ESPACIO (X=100 en lugar de 80) ===
+
+            // Crear Producto
+            panelAdmin.Controls.Add(new Label() { Text = "Nombre:", Location = new Point(10, 45), AutoSize = true });
+            txtNuevoNombre = new TextBox() { Location = new Point(100, 42), Width = 140 }; // Movido a la derecha
+            panelAdmin.Controls.Add(txtNuevoNombre);
+
+            panelAdmin.Controls.Add(new Label() { Text = "Precio:", Location = new Point(10, 75), AutoSize = true });
+            nudNuevoPrecio = new NumericUpDown() { Location = new Point(100, 72), DecimalPlaces = 2, Maximum = 10000, Width = 140 }; // Movido a la derecha
+            panelAdmin.Controls.Add(nudNuevoPrecio);
+
+            panelAdmin.Controls.Add(new Label() { Text = "Stock Inicial:", Location = new Point(10, 105), AutoSize = true });
+            nudNuevoStock = new NumericUpDown() { Location = new Point(100, 102), Maximum = 1000, Width = 140 }; // Movido a la derecha
+            panelAdmin.Controls.Add(nudNuevoStock);
+
+            btnCrearProducto = new Button() { Text = "Crear Producto", Location = new Point(10, 140), Width = 230, Height = 30 };
+            btnCrearProducto.Click += BtnCrearProducto_Click;
+            panelAdmin.Controls.Add(btnCrearProducto);
+
+            // Reponer Stock
+            panelAdmin.Controls.Add(new Label() { Text = "Selecciona y suma stock:", Location = new Point(10, 190), AutoSize = true });
+
+            nudCantidadReponer = new NumericUpDown() { Location = new Point(10, 215), Width = 80 };
+            panelAdmin.Controls.Add(nudCantidadReponer);
+
+            btnReponerStock = new Button() { Text = "Sumar Stock", Location = new Point(100, 213), Width = 140 };
+            btnReponerStock.Click += BtnReponerStock_Click;
+            panelAdmin.Controls.Add(btnReponerStock);
+
+
+            // --- PANEL CLIENTE ---
+            panelCliente = new Panel() { Location = new Point(20, 80), Size = new Size(280, 350), BorderStyle = BorderStyle.FixedSingle, Visible = false };
+            this.Controls.Add(panelCliente);
+
+            lblSaldoCliente = new Label() { Text = "Tu Saldo: $0.00", Location = new Point(10, 10), Font = new Font("Arial", 10, FontStyle.Bold) };
+            panelCliente.Controls.Add(lblSaldoCliente);
+
+            // Depositar
+            panelCliente.Controls.Add(new Label() { Text = "Depositar $:", Location = new Point(10, 50), AutoSize = true });
+            txtDeposito = new TextBox() { Location = new Point(90, 48), Width = 80 };
+            panelCliente.Controls.Add(txtDeposito);
+
+            btnDepositar = new Button() { Text = "Ok", Location = new Point(180, 46), Width = 50 };
+            btnDepositar.Click += BtnDepositar_Click;
+            panelCliente.Controls.Add(btnDepositar);
+
+            // Comprar
+            panelCliente.Controls.Add(new Label() { Text = "Cantidad a Comprar:", Location = new Point(10, 110), AutoSize = true });
+            nudCantidadComprar = new NumericUpDown() { Location = new Point(10, 130), Minimum = 1, Width = 100 };
+            panelCliente.Controls.Add(nudCantidadComprar);
+
+            btnComprar = new Button() { Text = "COMPRAR SELECCIONADO", Location = new Point(10, 170), Width = 230, Height = 40, BackColor = Color.LightGreen };
+            btnComprar.Click += BtnComprar_Click;
+            panelCliente.Controls.Add(btnComprar);
+        }
+
+        private void MostrarMenuPrincipal()
+        {
+            panelAdmin.Visible = false;
+            panelCliente.Visible = false;
+            ActualizarListaVisual();
+        }
+
+        private void MostrarPanelAdmin()
+        {
+            panelAdmin.Visible = true;
+            panelCliente.Visible = false;
+            lblTitulo.Text = "MODO: ADMINISTRADOR";
+            ActualizarListaVisual();
+        }
+
+        private void MostrarPanelCliente()
+        {
+            panelAdmin.Visible = false;
+            panelCliente.Visible = true;
+            lblTitulo.Text = "MODO: CLIENTE";
+            ActualizarListaVisual();
+        }
+
+        private void ActualizarListaVisual()
+        {
+            int index = listBoxGeneral.SelectedIndex;
+            listBoxGeneral.Items.Clear();
+            foreach (Producto p in listaProductos)
             {
-                MessageBox.Show("La aplicación no está inicializada correctamente.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                // CORREGIDO: Usamos p.Cantidad en vez de p.Stock
+                listBoxGeneral.Items.Add($"{p.Nombre} - ${p.Precio} (Disp: {p.Cantidad})");
+            }
+
+            if (index >= 0 && index < listBoxGeneral.Items.Count)
+                listBoxGeneral.SelectedIndex = index;
+
+            lblSaldoCliente.Text = $"Tu Saldo: {miCliente.Saldo:C}";
+        }
+
+        // --- LÓGICA ---
+
+        private void BtnCrearProducto_Click(object sender, EventArgs e)
+        {
+            string nombre = txtNuevoNombre.Text;
+            decimal precio = nudNuevoPrecio.Value;
+            int cantidad = (int)nudNuevoStock.Value;
+
+            if (string.IsNullOrWhiteSpace(nombre) || precio <= 0)
+            {
+                MessageBox.Show("Datos inválidos.");
                 return;
             }
-                
-            int cantidad = (int)nudCantidad.Value;
 
-            var venta = new Venta(productoEjemplo, cantidad);
+            Producto nuevo = new Producto(nombre, precio, cantidad);
+            listaProductos.Add(nuevo);
 
-            // Llamadas que expondrán los errores lógicos intencionales en la clase Venta
-            var total = venta.CalcularTotal();
-            venta.Procesar();
+            MessageBox.Show("Producto Creado.");
+            ActualizarListaVisual();
 
-            MessageBox.Show("Total calculado: " + total.ToString("C"), "Compra");
-            // Actualizar máximo por si el stock cambió (aunque la clase Venta contiene un error lógico)
-            nudCantidad.Maximum = productoEjemplo.Cantidad;
-            if (lblPrecio != null)
+            txtNuevoNombre.Clear(); nudNuevoPrecio.Value = 0; nudNuevoStock.Value = 0;
+        }
+
+        private void BtnReponerStock_Click(object sender, EventArgs e)
+        {
+            if (listBoxGeneral.SelectedIndex == -1)
             {
-                lblPrecio.Text = productoEjemplo.Precio.ToString("C");
+                MessageBox.Show("Selecciona un producto.");
+                return;
+            }
+
+            Producto p = listaProductos[listBoxGeneral.SelectedIndex];
+            int cantidad = (int)nudCantidadReponer.Value;
+
+            if (cantidad > 0)
+            {
+                // CORREGIDO: Usamos Cantidad en vez de Stock
+                p.Cantidad += cantidad;
+                MessageBox.Show($"Stock actualizado. Ahora hay {p.Cantidad}.");
+                ActualizarListaVisual();
             }
         }
 
-        private void btnAdmin_Click(object sender, EventArgs e)
+        private void BtnDepositar_Click(object sender, EventArgs e)
         {
-            if (productoEjemplo == null)
+            if (decimal.TryParse(txtDeposito.Text, out decimal monto))
             {
-                MessageBox.Show("Producto no inicializado.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                miCliente.Depositar(monto);
+                MessageBox.Show($"Depositaste {monto:C}");
+                txtDeposito.Clear();
+                ActualizarListaVisual();
+            }
+        }
+
+        private void BtnComprar_Click(object sender, EventArgs e)
+        {
+            if (listBoxGeneral.SelectedIndex == -1)
+            {
+                MessageBox.Show("Selecciona un producto.");
                 return;
             }
 
-            using (var adminForm = new AdminForm(productoEjemplo))
+            Producto p = listaProductos[listBoxGeneral.SelectedIndex];
+            int cantidad = (int)nudCantidadComprar.Value;
+
+            // CORREGIDO: Usamos Cantidad
+            if (cantidad > p.Cantidad)
             {
-                // Cambiar ShowDialog(this) por ShowDialog() para evitar el error
-                var result = adminForm.ShowDialog();
-                if (result == DialogResult.OK)
+                MessageBox.Show($"ALERTA: Stock insuficiente. Quedan {p.Cantidad}.");
+                return;
+            }
+
+            decimal total = p.Precio * cantidad;
+
+            DialogResult respuesta = MessageBox.Show(
+                $"Producto: {p.Nombre}\nTotal: {total:C}\n¿Confirmar?",
+                "Confirmar", MessageBoxButtons.YesNo);
+
+            if (respuesta == DialogResult.Yes)
+            {
+                // CORREGIDO: Usamos RealizarCompra
+                if (miCliente.IntentarCobrar(total))
                 {
-                    // Actualizar vista con los posibles cambios realizados por el admin
-                    if (lblPrecio != null)
-                    {
-                        lblPrecio.Text = productoEjemplo.Precio.ToString("C");
-                    }
-
-                    if (nudCantidad != null)
-                    {
-                        nudCantidad.Maximum = productoEjemplo.Cantidad;
-                        if (nudCantidad.Value > nudCantidad.Maximum)
-                        {
-                            nudCantidad.Value = nudCantidad.Maximum;
-                        }
-                    }
+                    p.Cantidad -= cantidad;
+                    MessageBox.Show("¡Compra exitosa!");
+                    ActualizarListaVisual();
                 }
-            }
-        }
-
-        private void btnCliente_Click(object sender, EventArgs e)
-        {
-            SetModoCliente();
-            MessageBox.Show("Modo cliente activado. Puedes comprar productos.", "Cliente", MessageBoxButtons.OK, MessageBoxIcon.Information);
-        }
-
-        private void SetModoCliente()
-        {
-            // Habilitar controles de compra y deshabilitar modificaciones administrativas en la UI
-            if (btnComprarProducto != null)
-                btnComprarProducto.Enabled = true;
-            if (nudCantidad != null)
-                nudCantidad.Enabled = true;
-            if (btnAdmin != null)
-                btnAdmin.Enabled = true; // dejar habilitado para permitir alternar
-        }
-
-        /// <summary>
-        /// Crea instancias mínimas de los controles que el formulario necesita
-        /// cuando el archivo generado por el diseñador no los haya creado.
-        /// Esta corrección es defensiva: lo ideal es restaurar el Form1.Designer.cs
-        /// desde control de versiones o volver a añadir los controles desde el Diseñador.
-        /// </summary>
-        private void EnsureControlsInitialized()
-        {
-            if (lblPrecio == null)
-            {
-                lblPrecio = new Label
+                else
                 {
-                    AutoSize = true,
-                    Location = new System.Drawing.Point(12, 9),
-                    Name = "lblPrecio",
-                    Text = "Precio"
-                };
-                this.Controls.Add(lblPrecio);
-            }
-
-            if (nudCantidad == null)
-            {
-                nudCantidad = new NumericUpDown
-                {
-                    Location = new System.Drawing.Point(12, 30),
-                    Name = "nudCantidad",
-                    Minimum = 0,
-                    Maximum = 100,
-                };
-                this.Controls.Add(nudCantidad);
-            }
-
-            if (btnComprarProducto == null)
-            {
-                btnComprarProducto = new Button
-                {
-                    Location = new System.Drawing.Point(12, 60),
-                    Name = "btnComprarProducto",
-                    Size = new System.Drawing.Size(100, 23),
-                    Text = "Comprar"
-                };
-                btnComprarProducto.Click += btnComprarProducto_Click;
-                this.Controls.Add(btnComprarProducto);
-            }
-
-            if (btnAdmin == null)
-            {
-                btnAdmin = new Button
-                {
-                    Location = new System.Drawing.Point(130, 60),
-                    Name = "btnAdmin",
-                    Size = new System.Drawing.Size(100, 23),
-                    Text = "Admin"
-                };
-                btnAdmin.Click += btnAdmin_Click;
-                this.Controls.Add(btnAdmin);
-            }
-
-            if (btnCliente == null)
-            {
-                btnCliente = new Button
-                {
-                    Location = new System.Drawing.Point(250, 60),
-                    Name = "btnCliente",
-                    Size = new System.Drawing.Size(100, 23),
-                    Text = "Cliente"
-                };
-                btnCliente.Click += btnCliente_Click;
-                this.Controls.Add(btnCliente);
+                    MessageBox.Show($"Saldo insuficiente. Te faltan {total - miCliente.Saldo:C}");
+                }
             }
         }
     }

@@ -8,41 +8,55 @@ namespace GestionVentas
 {
     internal class Producto
     {
-        private string nombre;  
-        private decimal precio; 
+        private string nombre;
+        private decimal precio;
         private int cantidad;
 
         public string Nombre
         {
             get { return nombre; }
             set { nombre = value; }
-        }
+        }       
         public decimal Precio
-            {
+        {
             get { return precio; }
             set { precio = value; }
-        }       
+        }   
         public int Cantidad
         {
             get { return cantidad; }
             set { cantidad = value; }
-        }   
-        public Producto ()
-        {
-            nombre = "";
-            precio = 0.0m;
-            cantidad = 0;
         }
+
+        // Constructor vacío
+        public Producto()
+        {
+            Nombre = "";
+            Precio = 0.0m;
+            Cantidad = 0;
+        }
+
+        // Constructor con datos
         public Producto(string nombre, decimal precio, int cantidad)
         {
-            this.nombre = nombre;
-            this.precio = precio;
-            this.cantidad = cantidad;
-        } 
-        
+            this.Nombre = nombre;
+            this.Precio = precio;
+            this.Cantidad = cantidad;
+        }
+
+        // Función para que en la lista se vea bonito: "Coca Cola - $15.00 (Disponibles: 10)"
         public override string ToString()
         {
-            return $"{nombre} - Precio: {precio:C}, Cantidad: {cantidad}";
+            return $"{Nombre} - Precio: {Precio:C} (Disponibles: {Cantidad})";
+        }
+
+        // Función nueva para rellenar inventario
+        public void AgregarStock(int cantidadExtra)
+        {
+            if (cantidadExtra > 0)
+            {
+                Cantidad += cantidadExtra;
+            }
         }
     }
 }
