@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Windows.Forms;
 
 namespace GestionVentas
@@ -16,9 +17,11 @@ namespace GestionVentas
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            // Producto de ejemplo para mostrar precio y cantidad
-            productoEjemplo = new Producto("Ejemplo", 9.99m, 100);
+           
 
+            // Producto de ejemplo para mostrar precio y cantidad
+            productoEjemplo = new Producto("", 0.0m,00 );
+            
 
             EnsureControlsInitialized();
 

@@ -27,12 +27,22 @@ namespace GestionVentas
             get { return cantidad; }
             set { cantidad = value; }
         }   
-
+        public Producto ()
+        {
+            nombre = "";
+            precio = 0.0m;
+            cantidad = 0;
+        }
         public Producto(string nombre, decimal precio, int cantidad)
         {
             this.nombre = nombre;
             this.precio = precio;
             this.cantidad = cantidad;
-        }   
+        } 
+        
+        public override string ToString()
+        {
+            return $"{nombre} - Precio: {precio:C}, Cantidad: {cantidad}";
+        }
     }
 }

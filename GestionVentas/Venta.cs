@@ -22,7 +22,7 @@ namespace GestionVentas
         public decimal CalcularTotal()
         {
          
-            return producto.Precio / cantidad;
+            return producto.Precio * cantidad;
         }
 
         public bool Procesar()
@@ -37,6 +37,14 @@ namespace GestionVentas
        
             var total = CalcularTotal();
             return "Total: " + Math.Truncate(total);
+        }
+        public  void ActualizarStock()
+        {
+            producto.Cantidad -= cantidad;
+        }   
+        public void RevertirStock()
+        {
+            producto.Cantidad += cantidad;
         }
     }
 }
