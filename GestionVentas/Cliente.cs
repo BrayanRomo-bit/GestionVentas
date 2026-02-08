@@ -1,26 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GestionVentas
 {
     internal class Cliente : Persona
     {
-        private string email;   
-        private decimal saldo;          
-
-        public string Email
-        {   
-            get { return email; }   
-            set { email = value; }
-        }
-        public decimal Saldo
-        {
-            get { return saldo; }
-            private set { saldo = value; } // El saldo solo se puede modificar desde dentro de la clase
-        }
+        public string Email { get; set; }
+        public decimal Saldo { get; private set; }
 
         public Cliente(string nombre, string apellido, string email, decimal saldoInicial) : base(nombre, apellido)
         {
@@ -28,30 +13,31 @@ namespace GestionVentas
             this.Saldo = saldoInicial;
         }
 
-        // Función para meter dinero a la cuenta
         public void Depositar(decimal monto)
         {
-            if (monto > 0)
-            {
-                Saldo += monto;
-            }
+            if (monto > 0) Saldo += monto;
         }
 
-        // Función para intentar cobrar
-        // Devuelve TRUE si se pudo cobrar, FALSE si no le alcanzó
-        public bool IntentarCobrar(decimal monto)
+        // Esta función devuelve TRUE solo si alcanza el dinero
+        public bool RealizarCompra(decimal monto)
         {
-            if (Saldo >= monto)
+            if (Saldo >= monto) // Si el saldo es mayor o igual al monto
             {
-                Saldo -= monto; // Restamos el dinero
+                Saldo -= monto; // Descontamos
                 return true;    // Éxito
             }
-            return false;       // Fallo (no tiene saldo suficiente)
+            return false;       // Fallo
         }
 
         public override string ToString()
         {
             return $"{Nombre} {Apellido} - Saldo: {Saldo:C}";
+        }
+
+        // Función extra para compatibilidad si tu código la llama
+        public void AgregarSaldo(decimal monto)
+        {
+            Depositar(monto);
         }
     }
 }

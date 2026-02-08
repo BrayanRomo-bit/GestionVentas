@@ -44,7 +44,7 @@ namespace GestionVentas
             this.Cantidad = cantidad;
         }
 
-        // Función para que en la lista se vea bonito: "Coca Cola - $15.00 (Disponibles: 10)"
+       
         public override string ToString()
         {
             return $"{Nombre} - Precio: {Precio:C} (Disponibles: {Cantidad})";

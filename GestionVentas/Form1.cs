@@ -16,12 +16,11 @@ namespace GestionVentas
         private Panel panelCliente;
         private ListBox listBoxGeneral;
 
-        // Botones del Menú Principal
         private Button btnEntrarAdmin;
         private Button btnEntrarCliente;
         private Label lblTitulo;
 
-        // Controles de ADMIN
+        // Admin
         private TextBox txtNuevoNombre;
         private NumericUpDown nudNuevoPrecio;
         private NumericUpDown nudNuevoStock;
@@ -29,8 +28,8 @@ namespace GestionVentas
         private Button btnReponerStock;
         private NumericUpDown nudCantidadReponer;
 
-        // Controles de CLIENTE
-        private Label lblSaldoCliente;
+        // Cliente
+        private Label lblSaldoCliente; // La etiqueta problemática
         private TextBox txtDeposito;
         private Button btnDepositar;
         private NumericUpDown nudCantidadComprar;
@@ -44,26 +43,20 @@ namespace GestionVentas
             MostrarMenuPrincipal();
         }
 
-        // AGREGADO: Esto soluciona el error CS1061 de la lista de errores
-        private void Form1_Load(object sender, EventArgs e)
-        {
-        }
+        private void Form1_Load(object sender, EventArgs e) { }
 
         private void ConfigurarDatos()
         {
             listaProductos = new List<Producto>();
-
-            // CORREGIDO: Ahora pasamos los 4 datos que pide tu clase Cliente
-            // (Nombre, Apellido, Email, Saldo)
-            miCliente = new Cliente("Usuario", "Prueba", "correo@ejemplo.com", 500.00m);
+            miCliente = new Cliente("Usuario", "Prueba", "correo@ejemplo.com", 0.00m);
         }
 
         private void CrearInterfaz()
         {
-            if (this.Width < 650) this.Size = new Size(650, 500); // Un poco más ancho
+            if (this.Width < 650) this.Size = new Size(650, 500);
             this.Text = "Sistema de Ventas";
 
-            // --- MENU PRINCIPAL ---
+            // MENÚ
             lblTitulo = new Label() { Text = "SELECCIONA TU ROL:", Location = new Point(20, 10), AutoSize = true, Font = new Font("Arial", 12, FontStyle.Bold) };
             this.Controls.Add(lblTitulo);
 
@@ -75,7 +68,7 @@ namespace GestionVentas
             btnEntrarCliente.Click += (s, e) => MostrarPanelCliente();
             this.Controls.Add(btnEntrarCliente);
 
-            // --- LISTA DE PRODUCTOS ---
+            // LISTA
             listBoxGeneral = new ListBox() { Location = new Point(320, 40), Size = new Size(280, 400) };
             this.Controls.Add(listBoxGeneral);
 
@@ -86,19 +79,17 @@ namespace GestionVentas
             Label lblAdminTitle = new Label() { Text = "--- GESTIÓN ADMIN ---", Location = new Point(10, 10), AutoSize = true, Font = new Font("Arial", 10, FontStyle.Bold) };
             panelAdmin.Controls.Add(lblAdminTitle);
 
-            // === AQUI CORREGÍ EL ESPACIO (X=100 en lugar de 80) ===
-
             // Crear Producto
             panelAdmin.Controls.Add(new Label() { Text = "Nombre:", Location = new Point(10, 45), AutoSize = true });
-            txtNuevoNombre = new TextBox() { Location = new Point(100, 42), Width = 140 }; // Movido a la derecha
+            txtNuevoNombre = new TextBox() { Location = new Point(100, 42), Width = 140 };
             panelAdmin.Controls.Add(txtNuevoNombre);
 
             panelAdmin.Controls.Add(new Label() { Text = "Precio:", Location = new Point(10, 75), AutoSize = true });
-            nudNuevoPrecio = new NumericUpDown() { Location = new Point(100, 72), DecimalPlaces = 2, Maximum = 10000, Width = 140 }; // Movido a la derecha
+            nudNuevoPrecio = new NumericUpDown() { Location = new Point(100, 72), DecimalPlaces = 2, Maximum = 10000, Width = 140 };
             panelAdmin.Controls.Add(nudNuevoPrecio);
 
             panelAdmin.Controls.Add(new Label() { Text = "Stock Inicial:", Location = new Point(10, 105), AutoSize = true });
-            nudNuevoStock = new NumericUpDown() { Location = new Point(100, 102), Maximum = 1000, Width = 140 }; // Movido a la derecha
+            nudNuevoStock = new NumericUpDown() { Location = new Point(100, 102), Maximum = 1000, Width = 140 };
             panelAdmin.Controls.Add(nudNuevoStock);
 
             btnCrearProducto = new Button() { Text = "Crear Producto", Location = new Point(10, 140), Width = 230, Height = 30 };
@@ -107,7 +98,6 @@ namespace GestionVentas
 
             // Reponer Stock
             panelAdmin.Controls.Add(new Label() { Text = "Selecciona y suma stock:", Location = new Point(10, 190), AutoSize = true });
-
             nudCantidadReponer = new NumericUpDown() { Location = new Point(10, 215), Width = 80 };
             panelAdmin.Controls.Add(nudCantidadReponer);
 
@@ -120,7 +110,8 @@ namespace GestionVentas
             panelCliente = new Panel() { Location = new Point(20, 80), Size = new Size(280, 350), BorderStyle = BorderStyle.FixedSingle, Visible = false };
             this.Controls.Add(panelCliente);
 
-            lblSaldoCliente = new Label() { Text = "Tu Saldo: $0.00", Location = new Point(10, 10), Font = new Font("Arial", 10, FontStyle.Bold) };
+            // Agregamos AutoSize = true para que el saldo se vea completo
+            lblSaldoCliente = new Label() { Text = "Tu Saldo: $0.00", Location = new Point(10, 10), Font = new Font("Arial", 10, FontStyle.Bold), AutoSize = true };
             panelCliente.Controls.Add(lblSaldoCliente);
 
             // Depositar
@@ -171,7 +162,6 @@ namespace GestionVentas
             listBoxGeneral.Items.Clear();
             foreach (Producto p in listaProductos)
             {
-                // CORREGIDO: Usamos p.Cantidad en vez de p.Stock
                 listBoxGeneral.Items.Add($"{p.Nombre} - ${p.Precio} (Disp: {p.Cantidad})");
             }
 
@@ -181,7 +171,7 @@ namespace GestionVentas
             lblSaldoCliente.Text = $"Tu Saldo: {miCliente.Saldo:C}";
         }
 
-        // --- LÓGICA ---
+        
 
         private void BtnCrearProducto_Click(object sender, EventArgs e)
         {
@@ -217,7 +207,6 @@ namespace GestionVentas
 
             if (cantidad > 0)
             {
-                // CORREGIDO: Usamos Cantidad en vez de Stock
                 p.Cantidad += cantidad;
                 MessageBox.Show($"Stock actualizado. Ahora hay {p.Cantidad}.");
                 ActualizarListaVisual();
@@ -246,7 +235,6 @@ namespace GestionVentas
             Producto p = listaProductos[listBoxGeneral.SelectedIndex];
             int cantidad = (int)nudCantidadComprar.Value;
 
-            // CORREGIDO: Usamos Cantidad
             if (cantidad > p.Cantidad)
             {
                 MessageBox.Show($"ALERTA: Stock insuficiente. Quedan {p.Cantidad}.");
@@ -255,14 +243,20 @@ namespace GestionVentas
 
             decimal total = p.Precio * cantidad;
 
+            if (total > miCliente.Saldo)
+            {
+                MessageBox.Show($"ERROR : Saldo insuficiente.\nTienes: {miCliente.Saldo:C}\nNecesitas: {total:C}");
+                return; 
+            }
+
             DialogResult respuesta = MessageBox.Show(
                 $"Producto: {p.Nombre}\nTotal: {total:C}\n¿Confirmar?",
                 "Confirmar", MessageBoxButtons.YesNo);
 
             if (respuesta == DialogResult.Yes)
             {
-                // CORREGIDO: Usamos RealizarCompra
-                if (miCliente.IntentarCobrar(total))
+                // Ahora llamamos a RealizarCompra (que ya debería devolver true porque validamos arriba)
+                if (miCliente.RealizarCompra(total))
                 {
                     p.Cantidad -= cantidad;
                     MessageBox.Show("¡Compra exitosa!");
@@ -270,7 +264,7 @@ namespace GestionVentas
                 }
                 else
                 {
-                    MessageBox.Show($"Saldo insuficiente. Te faltan {total - miCliente.Saldo:C}");
+                    MessageBox.Show("Error inesperado en el cobro.");
                 }
             }
         }
